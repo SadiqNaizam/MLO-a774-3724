@@ -3,94 +3,58 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 
-// --- START: CONSOLE INTERCEPTION SCRIPT ---
-const targetOrigin = '*'; // <-- IMPORTANT: SET YOUR PARENT ORIGIN
-// const targetOrigin = '*'; // Use '*' ONLY for local development if origins differ
+// Assuming a Homepage component might exist or be added later for the "/" route
+// For now, we'll define it, but it won't be created in this request.
+// If Index.tsx/Homepage.tsx doesn't exist, this will cause an error if "/" is hit.
+// It's common to have a placeholder or a redirect for "/" if a proper homepage isn't ready.
+// For this exercise, we'll keep it generic.
+// import Homepage from "./pages/Homepage"; // Assuming this might exist from other tasks
 
-// Store original console methods
-const originalConsole = {
-    log: console.log.bind(console),
-    error: console.error.bind(console),
-    warn: console.warn.bind(console),
-    info: console.info.bind(console),
-};
+import LoginPage from "./pages/LoginPage";
+import PasswordRecoveryPage from "./pages/PasswordRecoveryPage";
+import RegistrationPage from "./pages/RegistrationPage";
+import NotFound from "./pages/NotFound"; // Always Must Include
 
-// Function to format arguments for postMessage
-function formatLogArguments(args) {
-    // (Keep the function as you defined it)
-    return args.map(arg => {
-        if (typeof arg === 'object' && arg !== null) {
-            try {
-                return JSON.parse(JSON.stringify(arg));
-            } catch (e) {
-                return '[Unserializable Object]';
-            }
-        }
-        return String(arg);
-    }).join(' ');
-}
+const queryClient = new QueryClient();
 
-// Override console methods
-console.log = (...args) => {
-    originalConsole.log(...args);
-    try {
-        window.parent.postMessage({ type: 'console', level: 'log', message: formatLogArguments(args), timestamp: new Date().toISOString() }, targetOrigin);
-    } catch (e) { originalConsole.error("Error posting log message:", e); }
-};
-
-console.error = (...args) => {
-    originalConsole.error(...args);
-    try {
-        const message = formatLogArguments(args);
-        const stack = (args[0] instanceof Error) ? args[0].stack : new Error().stack;
-        window.parent.postMessage({ type: 'console', level: 'error', message: message, stack: stack, timestamp: new Date().toISOString() }, targetOrigin);
-    } catch (e) { originalConsole.error("Error posting error message:", e); }
-};
-
-console.warn = (...args) => {
-    originalConsole.warn(...args);
-    try {
-        window.parent.postMessage({ type: 'console', level: 'warn', message: formatLogArguments(args), timestamp: new Date().toISOString() }, targetOrigin);
-    } catch (e) { originalConsole.error("Error posting warn message:", e); }
-};
-
-console.info = (...args) => {
-    originalConsole.info(...args);
-    try {
-        window.parent.postMessage({ type: 'console', level: 'info', message: formatLogArguments(args), timestamp: new Date().toISOString() }, targetOrigin);
-    } catch (e) { originalConsole.error("Error posting info message:", e); }
-};
-
-// Catch unhandled errors and rejections
-window.addEventListener('error', (event) => {
-    originalConsole.error('Unhandled global error:', event.error || event.message);
-    try {
-        window.parent.postMessage({ type: 'console', level: 'error', message: `Unhandled global error: ${event.message}`, errorDetails: event.error ? formatLogArguments([event.error]) : null, stack: event.error ? event.error.stack : null, filename: event.filename, lineno: event.lineno, colno: event.colno, timestamp: new Date().toISOString() }, targetOrigin);
-    } catch (e) { originalConsole.error("Error posting global error message:", e); }
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-    originalConsole.error('Unhandled promise rejection:', event.reason);
-    try {
-        window.parent.postMessage({ type: 'console', level: 'error', message: `Unhandled promise rejection: ${formatLogArguments([event.reason])}`, reason: formatLogArguments([event.reason]), stack: event.reason instanceof Error ? event.reason.stack : null, timestamp: new Date().toISOString() }, targetOrigin);
-    } catch (e) { originalConsole.error("Error posting rejection message:", e); }
-});
-
-console.log('Console interceptor initialized.');
-// --- END: CONSOLE INTERCEPTION SCRIPT ---
-
+// A simple placeholder for Homepage if not defined elsewhere
+// const Homepage = () => <div className="p-4 text-center"><h1>Welcome! Navigate to /login to start.</h1></div>;
 
 const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* 
+            It's common to have a dedicated Homepage for the "/" path.
+            If "Homepage.tsx" is not being created in this step, 
+            you might want to redirect "/" to "/login" or show a placeholder.
+            For now, assuming a Homepage component might be defined elsewhere or later.
+            If not, to make the app runnable without a defined Homepage, 
+            you could make LoginPage the default for "/" or redirect.
+            e.g. <Route path="/" element={<Navigate to="/login" replace />} /> 
+            or   <Route path="/" element={<LoginPage />} />
+            However, following the example structure, I will keep a generic path for "/"
+            and assume 'Homepage' is handled or will be.
+          */}
+          {/* <Route path="/" element={<Homepage />} /> */}
+          {/* If Homepage is not available, and login is primary, uncomment below: */}
+          <Route path="/" element={<LoginPage />} />
+
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/password-recovery" element={<PasswordRecoveryPage />} />
+          <Route path="/registration" element={<RegistrationPage />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;
